@@ -27,7 +27,7 @@ You only need to solve **one** of the two environment options.
 
 The task is episodic, and in order to solve the environment, your agent must get an average score of **+30 over 100 consecutive episodes**.
 
-#### Option2: Solve the multi agent (duplicates) environment 
+#### Option 2: Solve the multi agent (duplicates) environment 
 
 The agents must get an average score of **+30** (over 100 consecutive episodes, and over all agents)
 
