@@ -37,7 +37,7 @@ The agents must get an average score of **+30** (over 100 consecutive episodes, 
 
 ### Getting Started
 
-#### Download the Unity Environment**
+#### Download the Unity Environment
 
 **Version 1: One (1) Agent**
 
