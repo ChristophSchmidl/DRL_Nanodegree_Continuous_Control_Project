@@ -130,7 +130,7 @@ dmypy.json
 
 
 # Unignore UnityEnvironment files
-!src/Reacher_Linux_one_agent/Reacher_Data/
-!src/Reacher_Linux_one_agent_NoVis/Reacher_Data/
-!src/Reacher_Linux_twenty_agent/Reacher_Data/
-!src/Reacher_Linux_twenty_agent_NoVis/Reacher_Data/
+!src/Reacher_Linux_one_agent/Reacher_Data/*
+!src/Reacher_Linux_one_agent_NoVis/Reacher_Data/*
+!src/Reacher_Linux_twenty_agent/Reacher_Data/*
+!src/Reacher_Linux_twenty_agent_NoVis/Reacher_Data/*
