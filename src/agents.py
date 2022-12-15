@@ -53,6 +53,9 @@ class DDPGAgent():
     def store_transition(self, state, action, reward, next_state, done):
         self.memory.store_transition(state, action, reward, next_state, done)
 
+    def reset_noise(self):
+        self.noise.reset()
+
     def save_models(self):
         self.actor.save_checkpoint()
         self.target_actor.save_checkpoint()

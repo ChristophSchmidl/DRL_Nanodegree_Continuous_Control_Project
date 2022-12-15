@@ -36,13 +36,13 @@ class ActorNetwork(nn.Module):
 
         self.mu = nn.Linear(self.fc2_dims, self.n_actions)
 
-        f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
-        self.fc1.weight.data.uniform_(-f1, f1)
-        self.fc1.bias.data.uniform_(-f1, f1)
-
         f2 = 1./np.sqrt(self.fc2.weight.data.size()[0])
         self.fc2.weight.data.uniform_(-f2, f2)
         self.fc2.bias.data.uniform_(-f2, f2)
+
+        f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
+        self.fc1.weight.data.uniform_(-f1, f1)
+        self.fc1.bias.data.uniform_(-f1, f1)
 
         f3 = 0.003
         self.mu.weight.data.uniform_(-f3, f3)
@@ -57,6 +57,7 @@ class ActorNetwork(nn.Module):
         x = self.fc1(state)
         x = self.bn1(x)
         x = F.relu(x) # after batchnorm seems better
+
         x = self.fc2(x)
         x = self.bn2(x)
         x = F.relu(x)

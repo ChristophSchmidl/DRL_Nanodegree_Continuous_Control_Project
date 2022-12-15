@@ -15,9 +15,9 @@ def parse_arguments():
 
     # the hyphen makes the argument optional
     parser.add_argument('-gpu', type=str, default='0', help='GPU: 0 or 1. Default is 0.')
-    parser.add_argument('-episodes', type=int, default=150, help='Number of games/episodes to play. Default is 150.')
+    parser.add_argument('-episodes', type=int, default=250, help='Number of games/episodes to play. Default is 250.')
     parser.add_argument('-alpha', type=float, default=0.0001, help='Learning rate alpha for the actor network. Default is 0.0001.')
-    parser.add_argument('-beta', type=float, default=0.001, help='Learning rate beta for the critic network. Default is 0.001.')
+    parser.add_argument('-beta', type=float, default=0.0001, help='Learning rate beta for the critic network. Default is 0.0001.')
     parser.add_argument('-gamma', type=float, default=0.99, help='Discount factor for update equation')
     parser.add_argument('-tau', type=float, default=0.001, help='Update network parameters. Default is 0.001.')
     parser.add_argument('-algo', type=str, default='DDPGAgent',
@@ -32,7 +32,8 @@ def parse_arguments():
                         help='Path for saving plots. Default is plots/')
     parser.add_argument('-save_plot', type=bool, default=True,
                         help='Save plot of eval or/and training phase. Default is True.')
-
+    parser.add_argument('-eval', type=bool, default=False,
+                        help='Evaluate the agent. Deterministic behavior. Default is False.')
     parser.add_argument('-multiagent_env', type=bool, default=False,
                         help='Using the multi agent environment version. Default is False.')
     parser.add_argument('-visual_env', type=bool, default=False,
@@ -87,8 +88,8 @@ if __name__ == '__main__':
                   beta=args.beta,  
                   gamma=args.gamma,
                   tau=args.tau,
-                  fc1_dims=400, 
-                  fc2_dims=300,
+                  fc1_dims=128, 
+                  fc2_dims=128,
                   #input_dims=env.observation_space.shape,
                   input_dims=state_size,
                   #n_actions=env.action_space.n,
@@ -116,7 +117,7 @@ if __name__ == '__main__':
         score = 0
 
         obs = unity_env.vector_observations[0]
-
+        agent.reset_noise()
         while not done:
             action = agent.choose_action(obs)
             unity_env = env.step(action)[brain_name] 
@@ -152,6 +153,9 @@ if __name__ == '__main__':
     end_time = (time.time() - start_time)/60
     print(f"\nTotal training time = {end_time:.1f} minutes")
 
+
+    np.save("data/episode_rewards.npy", episode_rewards)
+
     # plot the scores
     fig = plt.figure(figsize=(13, 10))
     ax = fig.add_subplot(111)
@@ -169,6 +173,8 @@ if __name__ == '__main__':
     plt.grid(True)
 
     if args.save_plot:
+        if not os.path.exists(args.plot_path):
+            os.makedirs(args.plot_path)
         if args.eval:
             plt.savefig(f"{args.plot_path}/Continuous_control_project_{args.algo}_eval.png")
         else:

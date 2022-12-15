@@ -6,7 +6,7 @@ class OUActionNoise():
     Ornstein-Uhlenbeck process
     See: https://ai.stackexchange.com/questions/23180/how-does-the-ornstein-uhlenbeck-process-work-and-how-it-is-used-in-ddpg
     '''
-    def __init__(self, mu, sigma=0.15, theta=0.2, dt=1e-2, x0=None):
+    def __init__(self, mu, sigma=0.2, theta=0.15, dt=1e-2, x0=None):
         self.mu = mu 
         self.sigma = sigma 
         self.theta = theta
