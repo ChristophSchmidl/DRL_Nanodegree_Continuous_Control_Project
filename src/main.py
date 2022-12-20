@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import time
 from src.utils import print_device_info, print_env_info, get_env
 import src.agents as Agents
+from src.noise import NoNoise
 
 
 def parse_arguments():
@@ -101,6 +102,17 @@ if __name__ == '__main__':
                   #env_name=args.env
                   env_name='Reacher'
     )
+
+    # If in evaluation mode
+    if args.eval:
+        print("Evaluating agent...")
+        # This leads to a deterministic behavior without exploration
+        #agent.epsilon = 0.0
+        #agent.epsilon_min = 0.0
+        #agent.epsilon_dec = 0.0
+        agent.noise = NoNoise()
+        args.load_checkpoint = True
+
 
     if args.load_checkpoint:
         agent.load_models()

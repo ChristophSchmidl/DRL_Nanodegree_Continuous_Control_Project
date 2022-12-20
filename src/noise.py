@@ -1,6 +1,12 @@
 import numpy as np
 
 
+class NoNoise():
+    def __call__(self):
+        return 0
+    def reset(self):
+        pass
+
 class OUActionNoise():
     '''
     Ornstein-Uhlenbeck process
