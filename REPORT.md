@@ -26,7 +26,7 @@ Algorithm 1: DDPG algorithm
         - Update critic by minimizing the loss (MSE): $L = \frac{1}{N} \sum_i (y_i - Q(s_i,a_i | \theta^Q))^2$
         - Update the actor policy using the sampled policy gradient:
 
-        $$\nabla_{\theta^{\mu}} J \approx \frac{1}{N} \sum_i \nabla_a Q(s,a | \theta^Q) | t_{s=s_i, a=\mu(s_i)} \nabla_{\theta^{\mu}} \mu(s | \theta^{\mu})| t_{s_i}$$ 
+        $$\nabla_{\theta^{\mu}} J \approx \frac{1}{N} \sum_i \nabla_a Q(s,a | \theta^Q) \right|_{s=s_i, a=\mu(s_i)} \nabla_{\theta^{\mu}} \mu(s | \theta^{\mu})| t_{s_i}$$ 
 
         - Update the target networks:
 
