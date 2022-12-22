@@ -24,7 +24,7 @@ Algorithm 1: DDPG algorithm
         - Sample a random minibatch of $N$ transitions $(s_i,a_i,r_i,s_{i+1})$ from $R$
         - Set $y_i = r_i + \gamma Q^{'}(s_{i+1}, \mu^{'}(s_{i+1} | \theta^{\mu^{'}}) | \theta^{Q^{'}})$
         - Update critic by minimizing the loss (MSE): $L = \frac{1}{N} \sum_i (y_i - Q(s_i,a_i | \theta^Q))^2$
-        - Update the actor policy using the sampled policy gradient:
+        - Update the actor policy using the sampled policy gradient (using the Deterministic Policy Gradient Theorem (Silver et al. 2014)):
 
         $$\nabla_{\theta^{\mu}} J \approx \frac{1}{N} \sum_i \nabla_a Q(s,a | \theta^Q) \vert_{s=s_i, a=\mu(s_i)} \nabla_{\theta^{\mu}} \mu(s | \theta^{\mu})\vert_{s_i}$$ 
 
