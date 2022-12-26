@@ -16,7 +16,7 @@ def parse_arguments():
 
     # the hyphen makes the argument optional
     parser.add_argument('-gpu', type=str, default='0', help='GPU: 0 or 1. Default is 0.')
-    parser.add_argument('-episodes', type=int, default=250, help='Number of games/episodes to play. Default is 250.')
+    parser.add_argument('-episodes', type=int, default=1000, help='Number of games/episodes to play. Default is 1000.')
     parser.add_argument('-alpha', type=float, default=0.0001, help='Learning rate alpha for the actor network. Default is 0.0001.')
     parser.add_argument('-beta', type=float, default=0.0001, help='Learning rate beta for the critic network. Default is 0.0001.')
     parser.add_argument('-gamma', type=float, default=0.99, help='Discount factor for update equation')
@@ -84,6 +84,13 @@ if __name__ == '__main__':
     # Neat trick without using if/else/switch: get me the correct agent/algorithm
     conrete_agent = getattr(Agents, args.algo)
 
+
+    '''
+    Note: We diverge from the hyperparameters of the DDPG paper "Continuous control with deep reinforcement learning" that
+    are mentioned in section 7 "Experiment details" of the supplementary information.
+    We use 128 and 128 neurons/units instead of 400 and 300 units for the first and second layer 
+    given that we have a different evnironment.
+    '''
     agent = conrete_agent(
                   alpha=args.alpha,
                   beta=args.beta,  

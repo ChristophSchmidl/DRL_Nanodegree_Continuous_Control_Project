@@ -10,7 +10,51 @@ import numpy as np
 #                  DDPG                  #
 ##########################################
 
+'''
+Taken from the DDPG paper: 
+
+"The final layer weights and biases of both the actor and critic
+were initialized from a uniform distribution [-3x10^{-3}, 3x10^{-3}] and
+[-3x10^{-4}, 3x10^{-4}] for the low dimensional and pixel cases respectively. 
+This was to ensure the initial outputs for the policy and value estimates were near zero. 
+The other layers were initialized from uniform distributions [-\frac{1}{\sqrt{f}}, \frac{1}{\sqrt{f}}]
+where f is the fan-in of the layer."
+
+Note: The term "fan-in" and "fan-out" is usually used in the context of digital electronics and logic gates.
+
+- Fan-in: The number of inputs of the gate / The maximum number of inputs that a logic gate can accept 
+(in our case: number of layer inputs)
+
+- Fan-out: The number of outputs of the gate / The maximum number of inputs (load) that can be 
+connected to the output of a gate without degrading the normal operation.
+'''
+
+def init_layer_uniformly_(layer, min_value=None, max_value=None):
+    '''
+    Initialize weights and biases of the layer. This is necessary to 
+    mitigate the problem of disappearing gradients caused by the form of many activation functions.
+
+    https://stackoverflow.com/questions/49433936/how-do-i-initialize-weights-in-pytorch
+    https://discuss.pytorch.org/t/how-are-layer-weights-and-biases-initialized-by-default/13073
+    
+    Note: layer.weight.data is a PyTorch Tensor
+    '''
+    if min_value is not None and max_value is not None:
+        layer.weight.data.uniform_(min_value, max_value)
+        layer.bias.data.uniform_(min_value, max_value)
+    else:
+        # This is basically Xavier init after Xavier Glorot
+        # See: "Understanding the difficulty of training deep feedforward neural networks"
+        # And: https://stats.stackexchange.com/questions/326710/why-is-weight-initialized-as-1-sqrt-of-hidden-nodes-in-neural-networks
+        input_dim = layer.weight.data.size()[0]
+        val = 1./np.sqrt(input_dim)
+        layer.weight.data.uniform_(-val, val) # in-place
+        layer.bias.data.uniform_(-val, val) # in-place
+
 class ActorNetwork(nn.Module):
+    '''
+    Actor (Policy) model that maps states to actions
+    '''
     def __init__(self, alpha, input_dims, fc1_dims, fc2_dims, n_actions,
                 name, checkpoint_dir="tmp/ddpg"):
         super().__init__()
@@ -34,24 +78,19 @@ class ActorNetwork(nn.Module):
         # self.bn1 = nn.BatchNorm1d(self.fc1_dims) # This would be BatchNorm
         # self.bn2 = nn.BatchNorm1d(self.fc2_dims)
 
-        self.mu = nn.Linear(self.fc2_dims, self.n_actions)
+        self.mu = nn.Linear(self.fc2_dims, self.n_actions) # Final layer "mu". Later wrapped with tanh [-1,1]
 
-        f2 = 1./np.sqrt(self.fc2.weight.data.size()[0])
-        self.fc2.weight.data.uniform_(-f2, f2)
-        self.fc2.bias.data.uniform_(-f2, f2)
-
-        f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
-        self.fc1.weight.data.uniform_(-f1, f1)
-        self.fc1.bias.data.uniform_(-f1, f1)
-
-        f3 = 0.003
-        self.mu.weight.data.uniform_(-f3, f3)
-        self.mu.bias.data.uniform_(-f3, f3)
+        self.init_weights_and_biases_uniformly()
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu') 
 
         self.to(self.device)
+
+    def init_weights_and_biases_uniformly(self):
+        init_layer_uniformly_(self.fc1)
+        init_layer_uniformly_(self.fc2)
+        init_layer_uniformly_(self.mu, min_value=-0.003, max_value=0.003)
 
     def forward(self, state):
         x = self.fc1(state)
@@ -82,6 +121,9 @@ class ActorNetwork(nn.Module):
             print(f"File not found: {self.checkpoint_file}. Continue training from scratch.")
 
 class CriticNetwork(nn.Module):
+    '''
+    Critic (Evaluation) model that maps states, actions to Q values
+    '''
     def __init__(self, beta, input_dims, fc1_dims, fc2_dims, n_actions,
                 name, checkpoint_dir='tmp/ddpg'):
         super().__init__()
@@ -104,26 +146,18 @@ class CriticNetwork(nn.Module):
 
         self.q = nn.Linear(self.fc2_dims, 1)
 
-        f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
-        self.fc1.weight.data.uniform_(-f1, f1)
-        self.fc1.bias.data.uniform_(-f1, f1)
-
-        f2 = 1./np.sqrt(self.fc2.weight.data.size()[0])
-        self.fc2.weight.data.uniform_(-f2, f2)
-        self.fc2.bias.data.uniform_(-f2, f2)
-
-        f3 = 0.003
-        self.q.weight.data.uniform_(-f3, f3)
-        self.q.bias.data.uniform_(-f3, f3)
-
-        f4 = 1./np.sqrt(self.action_value.weight.data.size()[0])
-        self.action_value.weight.data.uniform_(-f4, f4)
-        self.action_value.bias.data.uniform_(-f4, f4)
+        self.init_weights_and_biases_uniformly()
 
         self.optimizer = optim.Adam(self.parameters(), lr=self.beta, weight_decay=0.00)
 
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
         self.to(self.device)
+
+    def init_weights_and_biases_uniformly(self):
+        init_layer_uniformly_(self.fc1)
+        init_layer_uniformly_(self.fc2)
+        init_layer_uniformly_(self.q, min_value=-0.003, max_value=0.003)
+        init_layer_uniformly_(self.action_value)
 
     def forward(self, state, action):
         state_value = self.fc1(state)
