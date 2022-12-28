@@ -9,6 +9,25 @@ import src.agents as Agents
 from src.noise import NoNoise
 
 
+def parse_bool(s: str) -> bool:
+    '''
+    Small helper function for argparse to convert string to boolean.
+    Note: Argparse has this weird behavior when using bool as type,
+    it does not behave as expected. You can also avoid using this helper 
+    function by just using action='store_true' with choices=["true", "false"]? because then you do not have
+    to specify any argument for that specific flag, e.g.:
+    - parser.add_argument('-enable_stuff', action='store_true')
+    - parser.add_argument('-disable_stuff', action='store_false', dest='enable_stuff')
+    - python -m src.main -enable_stuff
+    OR:
+    - parser.add_argument('-enable_stuff', type=parse_bool, default=False)
+    - python -m src.main -enable_stuff True
+    '''
+    try:
+        return {'true': True, 'false': False}[s.lower()]
+    except KeyError:
+        raise argparse.ArgumentTypeError(f"Expected true/false, git: {s}")
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description='ActorCritic methods - Continuous Control Project'
@@ -25,20 +44,20 @@ def parse_arguments():
                     help='You can use the following algorithms: DDPGAgent. Default is DDPGAgent.')
     parser.add_argument('-buffer_size', type=int, default=1000000, help='Maximum size of memory/replay buffer. Default is 1000000.')
     parser.add_argument('-batch_size', type=int, default=128, help='Batch size for training. Default is 128.')
-    parser.add_argument('-load_checkpoint', type=bool, default=False,
+    parser.add_argument('-load_checkpoint', action='store_true',
                         help='Load model checkpoint/weights. Default is False.')
     parser.add_argument('-model_path', type=str, default='data/',
                         help='Path for model saving/loading. Default is data/')
     parser.add_argument('-plot_path', type=str, default='plots/',
                         help='Path for saving plots. Default is plots/')
-    parser.add_argument('-save_plot', type=bool, default=True,
-                        help='Save plot of eval or/and training phase. Default is True.')
-    parser.add_argument('-eval', type=bool, default=False,
+    parser.add_argument('-use_eval_mode', action='store_true',
                         help='Evaluate the agent. Deterministic behavior. Default is False.')
-    parser.add_argument('-multiagent_env', type=bool, default=False,
+    parser.add_argument('-use_multiagent_env', action='store_true',
                         help='Using the multi agent environment version. Default is False.')
-    parser.add_argument('-visual_env', type=bool, default=False,
+    parser.add_argument('-use_visual_env', action='store_true',
                         help='Using the visual environment. Default is False.')
+    parser.add_argument('-save_plot', action='store_true',
+                        help='Save plot of eval or/and training phase. Default is False.')
 
     # TODO: add more arguments
     
@@ -62,7 +81,7 @@ if __name__ == '__main__':
     #       Load correct environment         #
     ##########################################
 
-    env = get_env(multi_agent=args.multiagent_env, visual_mode=args.visual_env)
+    env = get_env(multi_agent=args.use_multiagent_env, visual_mode=args.use_visual_env)
     print_env_info(env)
     #env.close()
 
@@ -111,7 +130,7 @@ if __name__ == '__main__':
     )
 
     # If in evaluation mode
-    if args.eval:
+    if args.use_eval_mode:
         print("Evaluating agent...")
         # This leads to a deterministic behavior without exploration
         #agent.epsilon = 0.0
@@ -164,7 +183,7 @@ if __name__ == '__main__':
                 agent.save_models()
             best_score = avg_score
         
-        if avg_score >= 30 and not args.eval:
+        if avg_score >= 30 and not args.use_eval_mode:
             solution_txt = f"Solved in {i} episodes with an average reward score of {avg_score:.2f} of the last 100 episodes"
             print(solution_txt)
             break
@@ -173,7 +192,7 @@ if __name__ == '__main__':
     print(f"\nTotal training time = {end_time:.1f} minutes")
 
 
-    np.save("data/episode_rewards.npy", episode_rewards)
+    np.save("data/episode_rewards.npy", episode_rewards) # TODO: Only save when necessary (in training?)
 
     # plot the scores
     fig = plt.figure(figsize=(13, 10))
@@ -181,7 +200,7 @@ if __name__ == '__main__':
     #ax = fig.add_subplot(111)
     plt.plot(np.arange(len(episode_rewards)), episode_rewards)
 
-    if args.eval:
+    if args.use_eval_mode:
         plt.title(f"Continuous control project: {args.algo} - Evaluation") 
     else:
         plt.title(f"Continuous control project: {args.algo} - Training") 
@@ -194,7 +213,7 @@ if __name__ == '__main__':
     if args.save_plot:
         if not os.path.exists(args.plot_path):
             os.makedirs(args.plot_path)
-        if args.eval:
+        if args.use_eval_mode:
             plt.savefig(f"{args.plot_path}/Continuous_control_project_{args.algo}_eval.png")
         else:
             plt.savefig(f"{args.plot_path}/Continuous_control_project_{args.algo}_train.png")
