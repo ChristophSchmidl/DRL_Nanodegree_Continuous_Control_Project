@@ -118,7 +118,7 @@ Note: At the moment only agent "DDPGAgent" is available.
 
 If you want to evaluate the trained agents in non-visual mode (fast), you can use the following command:
 
-- ``python -m src.main -algo <AGENT_NAME> -episodes <NUMBER_OF_EPISODES> -use_eval_mode`
+- ``python -m src.main -algo <AGENT_NAME> -episodes <NUMBER_OF_EPISODES> -use_eval_mode``
 
 The above command simply loads the appropriate model weights, sets the noise to 0.0 to enforce a deterministic behavior (no exploration, pure exploitation) and runs the agent in non-visual mode.
 
