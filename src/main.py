@@ -38,7 +38,7 @@ def parse_arguments():
     parser.add_argument('-episodes', type=int, default=1000, help='Number of games/episodes to play. Default is 1000.')
     parser.add_argument('-alpha', type=float, default=0.0001, help='Learning rate alpha for the actor network. Default is 0.0001.')
     parser.add_argument('-beta', type=float, default=0.0001, help='Learning rate beta for the critic network. Default is 0.0001.')
-    parser.add_argument('-gamma', type=float, default=0.99, help='Discount factor for update equation')
+    parser.add_argument('-gamma', type=float, default=0.99, help='Discount factor for update equation. Default is 0.99.')
     parser.add_argument('-tau', type=float, default=0.001, help='Update network parameters. Default is 0.001.')
     parser.add_argument('-algo', type=str, default='DDPGAgent',
                     help='You can use the following algorithms: DDPGAgent. Default is DDPGAgent.')

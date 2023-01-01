@@ -53,7 +53,7 @@ def init_layer_uniformly_(layer, min_value=None, max_value=None):
 
 class ActorNetwork(nn.Module):
     '''
-    Actor (Policy) model that maps states to actions
+    Actor (Policy) model (called \mu(s|\theta^{\mu}) in the paper) that maps states to actions
     '''
     def __init__(self, alpha, input_dims, fc1_dims, fc2_dims, n_actions,
                 name, checkpoint_dir="tmp/ddpg"):
@@ -122,7 +122,7 @@ class ActorNetwork(nn.Module):
 
 class CriticNetwork(nn.Module):
     '''
-    Critic (Evaluation) model that maps states, actions to Q values
+    Critic (Evaluation) model (called Q(s,a|\theta^Q) in the paper) that maps states, actions to Q values
     '''
     def __init__(self, beta, input_dims, fc1_dims, fc2_dims, n_actions,
                 name, checkpoint_dir='tmp/ddpg'):
@@ -148,6 +148,8 @@ class CriticNetwork(nn.Module):
 
         self.init_weights_and_biases_uniformly()
 
+        # Note: In the paper they state:
+        # "For Q we included L2 weight decay of 10−2"
         self.optimizer = optim.Adam(self.parameters(), lr=self.beta, weight_decay=0.00)
 
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
@@ -167,8 +169,12 @@ class CriticNetwork(nn.Module):
         state_value = self.fc2(state_value)
         state_value = self.bn2(state_value)
 
-        action_value = self.action_value(action)
+        # Note: In the paper they state:
+        # "Actions were not included until the 2nd hidden layer of Q."
+        action_value = self.action_value(action) # <- Second hidden layer
 
+        # torch.add(input, other, *, alpha=1, out=None) -> Tensor
+        # Adds other, scaled by alpha, to input.
         state_action_value = F.relu(T.add(state_value, action_value))
         state_action_value = self.q(state_action_value)
 
